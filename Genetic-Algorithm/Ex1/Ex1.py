@@ -13,7 +13,7 @@ def fit(x):
 
 def genetic_algorithm(x,y):
 	NP=50;L=20;Pc=0.8;Pm=0.1;G=100;Xs=10;Xx=0
-	f=np.random.randint(0,2,size=(NP,L)) #Np*L维数组,元素只有0和1
+	f=np.random.randint(0,2,size=(NP,L)) #Np*L维数组,元素只有0和1 [0,2)
 
 	trace=np.zeros(shape=G)
 	for k in range(G):

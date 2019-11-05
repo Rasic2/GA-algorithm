@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#created at 2019/11/4 差分进化算法解决f(x,y)=3cos(xy)+x+y最小值问题
+#created at 2019/11/5 差分进化算法解决f(x,y)=-((x^2+y-1)^2+(x+y^2-7)^2)/200+10最大值问题
 
 import math
 import random
@@ -7,6 +7,7 @@ import numpy as np
 from matplotlib import cm
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.ticker import FuncFormatter
 
 #parameters
 NP=20     #count of population
@@ -14,17 +15,17 @@ D=2       #count of genes
 G=100     #count of generation
 F=0.5     #initial mutation factor
 CR=0.1    #crossover factor
-Xs=4      #upper bound
-Xx=-4     #lower bound
+Xs=100    #upper bound
+Xx=-100   #lower bound
 
 #initialize population
 x=np.zeros((NP,D))
 v=np.zeros((NP,D))
 u=np.zeros((NP,D))
-x=np.random.rand(NP,D)*(Xs-Xx)+Xx
-Ob=(3*np.cos(x[:,0]*x[:,1])+x[:,0]+x[:,1]).reshape(NP,1)
+x=np.random.randint(Xx,Xs+1,size=(NP,D))
+Ob=(-((x[:,0]**2+x[:,1]-1)**2+(x[:,0]+x[:,1]**2-7)**2)/200+10).reshape(NP,1)
 trace=np.zeros(G)
-trace[0]=min(Ob)
+trace[0]=max(Ob)
 
 #DE iteration
 for gen in range(G):
@@ -40,7 +41,7 @@ for gen in range(G):
 		r3=random.randint(0,NP-1)
 		while(r3==m or r3==r2 or r3==r1):
 			r3=random.randint(0,NP-1)
-		v[m,:]=x[r1,:]+F*(x[r2,:]-x[r3,:])
+		v[m,:]=np.floor((x[r1,:]+F*(x[r2,:]-x[r3,:])))
 
 	#crossover operator
 	r=random.randint(0,D-1)
@@ -56,10 +57,16 @@ for gen in range(G):
 	u=np.where(u>Xs,Xs,u) #vetorize the ndarray
 
 	#select operator
-	Ob1=(3*np.cos(u[:,0]*u[:,1])+u[:,0]+u[:,1]).reshape(NP,1)
-	x=np.where(Ob1<Ob,u,x)
-	Ob=(3*np.cos(x[:,0]*x[:,1])+x[:,0]+x[:,1]).reshape(NP,1)
-	trace[gen]=min(Ob)
+	Ob1=(-((u[:,0]**2+u[:,1]-1)**2+(u[:,0]+u[:,1]**2-7)**2)/200+10).reshape(NP,1)
+	x=np.where(Ob1>Ob,u,x)
+	Ob=(-((x[:,0]**2+x[:,1]-1)**2+(x[:,0]+x[:,1]**2-7)**2)/200+10).reshape(NP,1)
+	trace[gen]=max(Ob)
+
+def format_tick(x,pos):
+    return '$%d$' % (x/100000)
+
+def format_bar(x,pos):
+    return r'${0}$'.format(int(x/100000))
 
 plt.rc('font',family='Times New Roman') #配置全局字体
 plt.rcParams['mathtext.default']='regular' #配置数学公式字体
@@ -69,12 +76,15 @@ plt.rcParams['font.size']=16
 fig=plt.figure(figsize=(16,6))
 
 ax1=fig.add_subplot(121,projection='3d')
-X=np.arange(-4,4,0.02).reshape(400,1)
-Y=np.arange(-4,4,0.02).reshape(1,400)
-Z=3*np.cos(X*Y)+X+Y
+X=np.arange(-100,100,1).reshape(200,1)
+Y=np.arange(-100,100,1).reshape(1,200)
+Z=(-((X**2+Y-1)**2+(X+Y**2-7)**2)/200+10)
 surf=ax1.plot_surface(X,Y,Z,cmap=cm.coolwarm,linewidth=0,antialiased=False)
+formatter=FuncFormatter(format_tick)
+ax1.zaxis.set_major_formatter(formatter) #刻度缩小100000倍
 ax1.tick_params(labelsize=18) #setting fontsize of [x|y|z]ticks
-fig.colorbar(surf,shrink=0.5,aspect=5)
+ax1.text(85,130,0,r'$×10^5$')
+fig.colorbar(surf,shrink=0.5,aspect=5,format=FuncFormatter(format_bar))
 
 ax2=fig.add_subplot(122)
 ax2.plot(trace)

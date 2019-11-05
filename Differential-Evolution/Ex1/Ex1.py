@@ -52,7 +52,7 @@ for gen in range(G):
 		if(cr<=CR or n==r):
 			u[:,n]=v[:,n]
 		else:
-			u[:,n]=v[:,n]
+			u[:,n]=x[:,n]
 
 	#bondary condition
 	u=np.where((u<Xx)|(u>Xs),random.random()*(Xs-Xx)+Xx,u) #vetorize the ndarray
